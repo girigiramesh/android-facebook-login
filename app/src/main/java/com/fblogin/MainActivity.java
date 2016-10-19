@@ -18,6 +18,7 @@ import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.Profile;
@@ -34,6 +35,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     CallbackManager callbackManager;
     Button share, details;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
         callbackManager = CallbackManager.Factory.create();
@@ -127,21 +130,23 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-
+                Log.d(TAG, "onCancel: Login attempt cancelled.");
             }
 
             @Override
             public void onError(FacebookException error) {
-
+                Log.d(TAG, "onError: Login attempt failed.");
             }
         });
     }
 
     private void getKeyHash() {
+        PackageInfo info;
         try {
-            PackageInfo info = getPackageManager().getPackageInfo("com.fblogin", PackageManager.GET_SIGNATURES);
+            info = getPackageManager().getPackageInfo("com.fblogin", PackageManager.GET_SIGNATURES);
             for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
+                MessageDigest md;
+                md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
                 String something = new String(Base64.encode(md.digest(), 0));
                 Log.e("hash key", something);
